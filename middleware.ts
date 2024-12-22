@@ -7,5 +7,9 @@ export default withAuth({
 });
 
 export const config = {
-	matcher: ["/whiteboards/:path*"],
+	matcher: [
+		"/whiteboards/:path*",
+		"/api/whiteboards/:path*",
+		"/settings/:path*",
+	],
 };

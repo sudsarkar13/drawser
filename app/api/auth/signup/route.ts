@@ -1,32 +1,63 @@
-import { hash } from "bcrypt";
+import { NextResponse } from "next/server";
+import bcrypt from "bcrypt";
 import clientPromise from "@/lib/mongodb";
+import { z } from "zod";
+
+const signupSchema = z.object({
+	email: z.string().email(),
+	password: z.string().min(6),
+	name: z.string().min(2),
+});
 
 export async function POST(req: Request) {
 	try {
-		const { email, password, name } = await req.json();
-
-		if (!email || !password) {
-			return new Response("Missing fields", { status: 400 });
-		}
+		const body = await req.json();
+		const { email, password, name } = signupSchema.parse(body);
 
 		const client = await clientPromise;
-		const users = client.db().collection("users");
+		const db = client.db();
+		const users = db.collection("users");
 
-		const exists = await users.findOne({ email });
-		if (exists) {
-			return new Response("User already exists", { status: 400 });
+		// Check if user already exists
+		const existingUser = await users.findOne({
+			email: email.toLowerCase(),
+		});
+
+		if (existingUser) {
+			return NextResponse.json(
+				{ error: "Email already exists" },
+				{ status: 400 }
+			);
 		}
 
-		const hashedPassword = await hash(password, 10);
-		await users.insertOne({
-			email,
+		// Hash password
+		const hashedPassword = await bcrypt.hash(password, 12);
+
+		// Create user
+		const result = await users.insertOne({
+			email: email.toLowerCase(),
 			password: hashedPassword,
 			name,
 			createdAt: new Date(),
+			updatedAt: new Date(),
 		});
 
-		return new Response("User created", { status: 201 });
+		return NextResponse.json(
+			{ message: "User created successfully" },
+			{ status: 201 }
+		);
 	} catch (error) {
-		return new Response("Error creating user", { status: 500 });
+		if (error instanceof z.ZodError) {
+			return NextResponse.json(
+				{ error: error.errors[0].message },
+				{ status: 400 }
+			);
+		}
+
+		console.error("Signup error:", error);
+		return NextResponse.json(
+			{ error: "Internal server error" },
+			{ status: 500 }
+		);
 	}
 }

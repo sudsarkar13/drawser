@@ -1,17 +1,47 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import rough from "roughjs";
+import { nanoid } from "nanoid";
 import { useWhiteboardStore } from "@/lib/stores/whiteboard";
 import { WhiteboardElement } from "@/lib/models/whiteboard";
 import { cn } from "@/lib/utils";
+import { io } from "socket.io-client";
+
+const SOCKET_URL =
+	process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
 
 // Add this type import for RoughCanvas
 type RoughCanvas = ReturnType<typeof rough.canvas>;
 
-export function Canvas() {
+export function Canvas({ id }: { id: string }) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const { elements } = useWhiteboardStore();
+	const {
+		elements,
+		addElement,
+		updateElement,
+		deleteElement,
+		tool,
+		zoom,
+		pan,
+	} = useWhiteboardStore();
+
+	useEffect(() => {
+		const socket = io(SOCKET_URL);
+		socket.emit("join-room", id);
+
+		socket.on("element-update", (element: WhiteboardElement) => {
+			updateElement(element.id, element);
+		});
+
+		socket.on("element-delete", (elementId: string) => {
+			deleteElement(elementId);
+		});
+
+		return () => {
+			socket.disconnect();
+		};
+	}, [id]);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;

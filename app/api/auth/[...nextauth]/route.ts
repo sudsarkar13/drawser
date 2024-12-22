@@ -1,21 +1,22 @@
-import NextAuth, {
-	AuthOptions,
-	NextAuthOptions,
-	DefaultSession,
-} from "next-auth";
+import NextAuth, { DefaultSession, NextAuthOptions } from "next-auth";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
-import GoogleProvider from "next-auth/providers/google";
 
-// Extend the built-in session type
 declare module "next-auth" {
 	interface Session extends DefaultSession {
 		user: {
 			id: string;
 		} & DefaultSession["user"];
+	}
+
+	interface User {
+		id: string;
+		email: string;
+		name?: string | null;
 	}
 }
 
@@ -38,8 +39,10 @@ export const authOptions: NextAuthOptions = {
 				}
 
 				const client = await clientPromise;
-				const users = client.db().collection("users");
-				const user = await users.findOne({ email: credentials.email });
+				const db = client.db();
+				const user = await db.collection("users").findOne({
+					email: credentials.email.toLowerCase(),
+				});
 
 				if (!user || !user.password) {
 					throw new Error("User not found");
@@ -49,7 +52,6 @@ export const authOptions: NextAuthOptions = {
 					credentials.password,
 					user.password
 				);
-
 				if (!isValid) {
 					throw new Error("Invalid password");
 				}
@@ -64,12 +66,13 @@ export const authOptions: NextAuthOptions = {
 	],
 	pages: {
 		signIn: "/auth/signin",
+		newUser: "/auth/signup",
 	},
 	session: {
-		strategy: "jwt" as const,
+		strategy: "jwt",
 	},
 	callbacks: {
-		async jwt({ token, user }) {
+		async jwt({ token, user, account }) {
 			if (user) {
 				token.id = user.id;
 			}

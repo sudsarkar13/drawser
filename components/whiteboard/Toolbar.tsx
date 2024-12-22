@@ -2,40 +2,43 @@
 
 import { Button } from "@/components/ui/button";
 import { useWhiteboardStore } from "@/lib/stores/whiteboard";
-import {
-	Square,
-	Circle,
-	ArrowRight,
-	Type,
-	Minus,
-	Pencil,
-	MousePointer,
-} from "lucide-react";
+import { Tools } from "./Tools";
+import { WhiteboardSettings } from "./Settings";
+import { Undo2, Redo2, ZoomIn, ZoomOut, Save } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
-const tools = [
-	{ type: "select", icon: MousePointer },
-	{ type: "rectangle", icon: Square },
-	{ type: "ellipse", icon: Circle },
-	{ type: "arrow", icon: ArrowRight },
-	{ type: "text", icon: Type },
-	{ type: "line", icon: Minus },
-	{ type: "freedraw", icon: Pencil },
-] as const;
+export function Toolbar({ id }: { id: string }) {
+	const { undo, redo, zoom, setZoom } = useWhiteboardStore();
 
-export function Toolbar() {
-	const { tool, setTool } = useWhiteboardStore();
+	const handleZoomIn = () => setZoom(zoom + 0.1);
+	const handleZoomOut = () => setZoom(Math.max(0.1, zoom - 0.1));
 
 	return (
-		<div className="flex gap-2">
-			{tools.map((t) => (
-				<Button
-					key={t.type}
-					variant={tool === t.type ? "default" : "outline"}
-					size="icon"
-					onClick={() => setTool(t.type)}>
-					<t.icon className="h-4 w-4" />
+		<div className="flex items-center gap-2">
+			<Tools />
+			<Separator orientation="vertical" className="h-6" />
+			<div className="flex items-center gap-1">
+				<Button variant="ghost" size="icon" onClick={undo}>
+					<Undo2 className="h-4 w-4" />
 				</Button>
-			))}
+				<Button variant="ghost" size="icon" onClick={redo}>
+					<Redo2 className="h-4 w-4" />
+				</Button>
+			</div>
+			<Separator orientation="vertical" className="h-6" />
+			<div className="flex items-center gap-1">
+				<Button variant="ghost" size="icon" onClick={handleZoomOut}>
+					<ZoomOut className="h-4 w-4" />
+				</Button>
+				<span className="min-w-[3rem] text-center text-sm">
+					{Math.round(zoom * 100)}%
+				</span>
+				<Button variant="ghost" size="icon" onClick={handleZoomIn}>
+					<ZoomIn className="h-4 w-4" />
+				</Button>
+			</div>
+			<Separator orientation="vertical" className="h-6" />
+			<WhiteboardSettings id={id} />
 		</div>
 	);
 }
