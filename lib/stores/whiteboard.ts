@@ -4,7 +4,18 @@ import { WhiteboardElement } from "@/lib/models/whiteboard";
 interface WhiteboardState {
 	elements: WhiteboardElement[];
 	selectedElement: WhiteboardElement | null;
-	tool: "select" | "hand" | "rectangle" | "ellipse" | "arrow" | "text" | "line" | "freedraw" | "sticky" | "image" | "eraser";
+	tool:
+		| "select"
+		| "hand"
+		| "rectangle"
+		| "ellipse"
+		| "arrow"
+		| "text"
+		| "line"
+		| "freedraw"
+		| "sticky"
+		| "image"
+		| "eraser";
 	history: WhiteboardElement[][];
 	historyIndex: number;
 	zoom: number;
@@ -29,7 +40,7 @@ export const useWhiteboardStore = create<WhiteboardState>((set) => ({
 	zoom: 1,
 	pan: { x: 0, y: 0 },
 
-	addElement: (element) => 
+	addElement: (element) =>
 		set((state) => {
 			const newElements = [...state.elements, element];
 			const newHistory = state.history.slice(0, state.historyIndex + 1);
@@ -42,7 +53,7 @@ export const useWhiteboardStore = create<WhiteboardState>((set) => ({
 
 	updateElement: (id, element) =>
 		set((state) => {
-			const newElements = state.elements.map((el) => 
+			const newElements = state.elements.map((el) =>
 				el.id === id ? { ...el, ...element } : el
 			);
 			const newHistory = state.history.slice(0, state.historyIndex + 1);
@@ -66,26 +77,28 @@ export const useWhiteboardStore = create<WhiteboardState>((set) => ({
 
 	setSelectedElement: (element) => set({ selectedElement: element }),
 	setTool: (tool) => set({ tool }),
-	
-	undo: () => set((state) => {
-		if (state.historyIndex > 0) {
-			return {
-				elements: state.history[state.historyIndex - 1],
-				historyIndex: state.historyIndex - 1,
-			};
-		}
-		return state;
-	}),
 
-	redo: () => set((state) => {
-		if (state.historyIndex < state.history.length - 1) {
-			return {
-				elements: state.history[state.historyIndex + 1],
-				historyIndex: state.historyIndex + 1,
-			};
-		}
-		return state;
-	}),
+	undo: () =>
+		set((state) => {
+			if (state.historyIndex > 0) {
+				return {
+					elements: state.history[state.historyIndex - 1],
+					historyIndex: state.historyIndex - 1,
+				};
+			}
+			return state;
+		}),
+
+	redo: () =>
+		set((state) => {
+			if (state.historyIndex < state.history.length - 1) {
+				return {
+					elements: state.history[state.historyIndex + 1],
+					historyIndex: state.historyIndex + 1,
+				};
+			}
+			return state;
+		}),
 
 	setZoom: (zoom) => set({ zoom }),
 	setPan: (pan) => set({ pan }),
