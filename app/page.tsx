@@ -1,8 +1,13 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Pencil } from "lucide-react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 export default function Home() {
+	const { data: session } = useSession();
+
 	return (
 		<main className="flex flex-col items-center justify-center p-4">
 			<div className="container mx-auto max-w-4xl">
@@ -21,10 +26,10 @@ export default function Home() {
 						</p>
 
 						<div className="flex gap-4">
-							<Link href="/whiteboards/new">
+							<Link href={session ? "/whiteboards/new" : "/api/auth/signin"}>
 								<Button size="lg" className="gap-2">
 									<Pencil className="h-4 w-4" />
-									Start Drawing
+									{session ? "Start Drawing" : "Sign in to Start"}
 								</Button>
 							</Link>
 							<Link href="/explore">

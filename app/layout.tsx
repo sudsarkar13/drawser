@@ -28,8 +28,10 @@ export default function RootLayout({
 					geistSans.variable
 				)}
 				suppressHydrationWarning>
-				<NavBar />
-				<AuthProvider>{children}</AuthProvider>
+				<AuthProvider>
+					<NavBar />
+					{children}
+				</AuthProvider>
 			</body>
 		</html>
 	);
