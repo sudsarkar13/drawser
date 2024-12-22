@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import rough from "roughjs";
-import { nanoid } from "nanoid";
 import { useWhiteboardStore } from "@/lib/stores/whiteboard";
 import { WhiteboardElement } from "@/lib/models/whiteboard";
 import { cn } from "@/lib/utils";
 
+// Add this type import for RoughCanvas
+type RoughCanvas = ReturnType<typeof rough.canvas>;
+
 export function Canvas() {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const [tool, setTool] = useState<string>("select");
-	const { elements, addElement, updateElement } = useWhiteboardStore();
+	const { elements } = useWhiteboardStore();
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
