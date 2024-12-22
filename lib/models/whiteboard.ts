@@ -1,3 +1,8 @@
+interface Point {
+	x: number;
+	y: number;
+}
+
 export interface Whiteboard {
 	id: string;
 	userId: string;
